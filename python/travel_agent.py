@@ -143,6 +143,7 @@ class ItineraryResponse(BaseModel):
 @dataclass
 class TravelContext:
     """Context for the travel agent application."""
+
     conversation_history: List[Dict[str, str]] = None
 
     def __post_init__(self):
@@ -152,9 +153,7 @@ class TravelContext:
 
 @function_tool
 async def search_destinations(
-    cw: RunContextWrapper[TravelContext],
-    region: str = "",
-    subregion: str = ""
+    cw: RunContextWrapper[TravelContext], region: str = "", subregion: str = ""
 ) -> DestinationSearchResponse:
     """
     Search for travel destinations by region or subregion using REST Countries API.
@@ -184,8 +183,11 @@ async def search_destinations(
 
         # Filter by subregion if provided
         if subregion:
-            countries_data = [c for c in countries_data
-                            if c.get("subregion", "").lower() == subregion.lower()]
+            countries_data = [
+                c
+                for c in countries_data
+                if c.get("subregion", "").lower() == subregion.lower()
+            ]
 
         # Limit to 10 countries to avoid too much data
         countries_data = countries_data[:10]
@@ -200,7 +202,7 @@ async def search_destinations(
                 population=country.get("population", 0),
                 currencies=list(country.get("currencies", {}).keys()),
                 languages=list(country.get("languages", {}).values()),
-                timezones=country.get("timezones", [])
+                timezones=country.get("timezones", []),
             )
             countries.append(country_info)
 
@@ -208,14 +210,13 @@ async def search_destinations(
             status="success",
             message=f"Found {len(countries)} destinations in {region or 'all regions'}",
             countries=countries,
-            count=len(countries)
+            count=len(countries),
         )
 
     except requests.RequestException as e:
         print(f"Error searching destinations: {str(e)}")
         return DestinationSearchResponse(
-            status="error",
-            message=f"Failed to search destinations: {str(e)}"
+            status="error", message=f"Failed to search destinations: {str(e)}"
         )
 
 
@@ -224,7 +225,7 @@ async def get_weather_forecast(
     cw: RunContextWrapper[TravelContext],
     location_name: str,
     latitude: float,
-    longitude: float
+    longitude: float,
 ) -> WeatherResponse:
     """
     Get current weather and 7-day forecast using Open-Meteo API (no API key required).
@@ -250,7 +251,7 @@ async def get_weather_forecast(
             "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code",
             "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum",
             "timezone": "auto",
-            "forecast_days": 7
+            "forecast_days": 7,
         }
 
         response = requests.get(url, params=params, timeout=10)
@@ -272,7 +273,7 @@ async def get_weather_forecast(
             63: "Moderate rain",
             65: "Heavy rain",
             71: "Light snow",
-            95: "Thunderstorm"
+            95: "Thunderstorm",
         }
         current_conditions = conditions.get(weather_code, "Unknown")
 
@@ -285,9 +286,15 @@ async def get_weather_forecast(
         for i in range(min(len(times), len(temp_max), len(temp_min), len(precip))):
             daily_forecast = DailyForecast(
                 date=times[i] if i < len(times) else "",
-                temp_max=float(temp_max[i]) if i < len(temp_max) and temp_max[i] is not None else 0.0,
-                temp_min=float(temp_min[i]) if i < len(temp_min) and temp_min[i] is not None else 0.0,
-                precipitation=float(precip[i]) if i < len(precip) and precip[i] is not None else 0.0
+                temp_max=float(temp_max[i])
+                if i < len(temp_max) and temp_max[i] is not None
+                else 0.0,
+                temp_min=float(temp_min[i])
+                if i < len(temp_min) and temp_min[i] is not None
+                else 0.0,
+                precipitation=float(precip[i])
+                if i < len(precip) and precip[i] is not None
+                else 0.0,
             )
             forecast_days.append(daily_forecast)
 
@@ -295,37 +302,40 @@ async def get_weather_forecast(
             location=location_name,
             latitude=float(latitude),
             longitude=float(longitude),
-            current_temperature=float(current.get("temperature_2m", 0.0)) if current.get("temperature_2m") is not None else 0.0,
+            current_temperature=float(current.get("temperature_2m", 0.0))
+            if current.get("temperature_2m") is not None
+            else 0.0,
             current_conditions=current_conditions,
-            forecast_days=forecast_days
+            forecast_days=forecast_days,
         )
 
         return WeatherResponse(
             status="success",
             message=f"Weather forecast retrieved for {location_name}",
-            forecast=forecast
+            forecast=forecast,
         )
 
     except requests.RequestException as e:
         print(f"Error getting weather forecast (RequestException): {str(e)}")
         return WeatherResponse(
-            status="error",
-            message=f"Failed to get weather forecast: {str(e)}"
+            status="error", message=f"Failed to get weather forecast: {str(e)}"
         )
     except Exception as e:
-        print(f"Error getting weather forecast (Exception): {type(e).__name__}: {str(e)}")
+        print(
+            f"Error getting weather forecast (Exception): {type(e).__name__}: {str(e)}"
+        )
         import traceback
+
         traceback.print_exc()
         return WeatherResponse(
             status="error",
-            message=f"Failed to get weather forecast: {type(e).__name__}: {str(e)}"
+            message=f"Failed to get weather forecast: {type(e).__name__}: {str(e)}",
         )
 
 
 @function_tool
 async def get_location_coordinates(
-    cw: RunContextWrapper[TravelContext],
-    location_name: str
+    cw: RunContextWrapper[TravelContext], location_name: str
 ) -> CoordinatesResponse:
     """
     Get coordinates for a location using Nominatim (OpenStreetMap) API.
@@ -343,14 +353,8 @@ async def get_location_coordinates(
         await asyncio.sleep(1.1)
 
         url = "https://nominatim.openstreetmap.org/search"
-        params = {
-            "q": location_name,
-            "format": "json",
-            "limit": 1
-        }
-        headers = {
-            "User-Agent": "TravelAgentDemo/1.0 (OpenTelemetry Sample App)"
-        }
+        params = {"q": location_name, "format": "json", "limit": 1}
+        headers = {"User-Agent": "TravelAgentDemo/1.0 (OpenTelemetry Sample App)"}
 
         response = requests.get(url, params=params, headers=headers, timeout=10)
         response.raise_for_status()
@@ -359,8 +363,7 @@ async def get_location_coordinates(
 
         if not data:
             return CoordinatesResponse(
-                status="error",
-                message=f"Location not found: {location_name}"
+                status="error", message=f"Location not found: {location_name}"
             )
 
         location_data = data[0]
@@ -369,27 +372,25 @@ async def get_location_coordinates(
             latitude=float(location_data.get("lat", 0.0)),
             longitude=float(location_data.get("lon", 0.0)),
             country=location_data.get("display_name", "").split(",")[-1].strip(),
-            display_name=location_data.get("display_name", "")
+            display_name=location_data.get("display_name", ""),
         )
 
         return CoordinatesResponse(
             status="success",
             message=f"Coordinates found for {location_name}",
-            coordinates=coordinates
+            coordinates=coordinates,
         )
 
     except requests.RequestException as e:
         print(f"Error getting coordinates: {str(e)}")
         return CoordinatesResponse(
-            status="error",
-            message=f"Failed to get coordinates: {str(e)}"
+            status="error", message=f"Failed to get coordinates: {str(e)}"
         )
 
 
 @function_tool
 async def get_destination_info(
-    cw: RunContextWrapper[TravelContext],
-    destination_name: str
+    cw: RunContextWrapper[TravelContext], destination_name: str
 ) -> DestinationInfoResponse:
     """
     Get information about a destination from Wikipedia API.
@@ -407,9 +408,7 @@ async def get_destination_info(
         await asyncio.sleep(0.5)
 
         url = "https://en.wikipedia.org/api/rest_v1/page/summary/" + destination_name
-        headers = {
-            "User-Agent": "TravelAgentDemo/1.0 (OpenTelemetry Sample App)"
-        }
+        headers = {"User-Agent": "TravelAgentDemo/1.0 (OpenTelemetry Sample App)"}
 
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
@@ -419,20 +418,19 @@ async def get_destination_info(
         info = DestinationInfo(
             title=data.get("title", destination_name),
             summary=data.get("description", "No description available"),
-            extract=data.get("extract", "No information available")
+            extract=data.get("extract", "No information available"),
         )
 
         return DestinationInfoResponse(
             status="success",
             message=f"Retrieved information for {destination_name}",
-            info=info
+            info=info,
         )
 
     except requests.RequestException as e:
         print(f"Error getting destination info: {str(e)}")
         return DestinationInfoResponse(
-            status="error",
-            message=f"Failed to get destination info: {str(e)}"
+            status="error", message=f"Failed to get destination info: {str(e)}"
         )
 
 
@@ -444,7 +442,7 @@ async def calculate_travel_distance(
     from_lat: float,
     from_lon: float,
     to_lat: float,
-    to_lon: float
+    to_lon: float,
 ) -> DistanceResponse:
     """
     Calculate distance and estimated flight time between two locations.
@@ -475,7 +473,10 @@ async def calculate_travel_distance(
         dlat = lat2 - lat1
         dlon = lon2 - lon1
 
-        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+        )
         c = 2 * math.asin(math.sqrt(a))
         distance_km = R * c
 
@@ -486,20 +487,19 @@ async def calculate_travel_distance(
             from_location=from_location,
             to_location=to_location,
             distance_km=round(distance_km, 2),
-            flight_time_hours=round(flight_time_hours, 2)
+            flight_time_hours=round(flight_time_hours, 2),
         )
 
         return DistanceResponse(
             status="success",
             message=f"Distance calculated: {distance_km:.2f} km, ~{flight_time_hours:.2f} hours flight",
-            distance_info=distance_info
+            distance_info=distance_info,
         )
 
     except Exception as e:
         print(f"Error calculating distance: {str(e)}")
         return DistanceResponse(
-            status="error",
-            message=f"Failed to calculate distance: {str(e)}"
+            status="error", message=f"Failed to calculate distance: {str(e)}"
         )
 
 
@@ -511,7 +511,7 @@ async def create_itinerary(
     budget: str,
     interests: str,
     weather_info: str = "",
-    destination_details: str = ""
+    destination_details: str = "",
 ) -> ItineraryResponse:
     """
     Create a detailed day-by-day travel itinerary using AI.
@@ -565,13 +565,13 @@ Each day should have 3-5 activities with specific times, locations, and helpful 
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an expert travel planner who creates detailed, practical itineraries."
+                    "content": "You are an expert travel planner who creates detailed, practical itineraries.",
                 },
-                {"role": "user", "content": itinerary_prompt}
+                {"role": "user", "content": itinerary_prompt},
             ],
             temperature=0.7,
             max_tokens=3000,
-            response_format=TravelItinerary
+            response_format=TravelItinerary,
         )
 
         itinerary = response.choices[0].message.parsed
@@ -579,25 +579,25 @@ Each day should have 3-5 activities with specific times, locations, and helpful 
         return ItineraryResponse(
             status="success",
             message=f"Created {duration_days}-day itinerary for {destination}",
-            itinerary=itinerary
+            itinerary=itinerary,
         )
 
     except Exception as e:
         print(f"Error creating itinerary: {type(e).__name__}: {str(e)}")
         import traceback
+
         traceback.print_exc()
         return ItineraryResponse(
-            status="error",
-            message=f"Failed to create itinerary: {str(e)}"
+            status="error", message=f"Failed to create itinerary: {str(e)}"
         )
 
 
-class TravelRecommendationPlannerAgent(Agent[TravelContext]):
+class TravelRecommendationAgent(Agent[TravelContext]):
     """Specialized agent for travel planning with 6 tools, always creating itineraries."""
 
     def __init__(self, model: str = "gpt-4o"):
         super().__init__(
-            name="Travel Recommendation Planner Agent",
+            name="Travel Recommendation Agent",
             instructions="""
             You are an expert travel planning assistant. Your PRIMARY GOAL is to ALWAYS create a detailed
             travel itinerary for the user, no matter how broad or specific their request is.
@@ -646,7 +646,7 @@ class TravelRecommendationPlannerAgent(Agent[TravelContext]):
                 get_weather_forecast,
                 get_destination_info,
                 calculate_travel_distance,
-                create_itinerary
+                create_itinerary,
             ],
         )
 
@@ -706,7 +706,7 @@ async def run_travel_query(query: str):
     print("=" * 80)
 
     travel_ctx = TravelContext(conversation_history=[])
-    travel_agent = TravelRecommendationPlannerAgent()
+    travel_agent = TravelRecommendationAgent()
 
     print("\nAgent Response: ", end="", flush=True)
 
@@ -714,9 +714,11 @@ async def run_travel_query(query: str):
     runner = Runner().run_streamed(starting_agent=travel_agent, input=messages)
     tool_calls = await handle_runner_stream(runner)
 
-    print(f"\n{'='*80}")
-    print(f"✅ Query completed! Tools used: {', '.join(tool_calls) if tool_calls else 'None'}")
-    print(f"{'='*80}\n")
+    print(f"\n{'=' * 80}")
+    print(
+        f"✅ Query completed! Tools used: {', '.join(tool_calls) if tool_calls else 'None'}"
+    )
+    print(f"{'=' * 80}\n")
 
     return tool_calls
 
@@ -729,57 +731,37 @@ def generate_travel_queries(n: int = 10) -> List[str]:
         # === VERY SPECIFIC REQUESTS (most details provided) ===
         # Agent should: get weather + destination info + create itinerary (3-4 tools)
         "Plan a {duration}-day {budget} trip to {city} for {travelers} interested in {interest}. Create a complete itinerary.",
-
         "I want to visit {city} for {duration} days with a {budget} budget. I love {interest}. Create me an itinerary.",
-
         "Create a {duration}-day itinerary for {city}. Budget: {budget}, interests: {interest} and {interest2}.",
-
         # === MODERATELY SPECIFIC REQUESTS (some details, need destination selection) ===
         # Agent should: search destinations + coordinates + weather + info + create itinerary (5-6 tools)
         "I want a {duration}-day {budget} {season} vacation in {region}. I'm interested in {interest}. Plan my trip.",
-
         "Plan a {adjective} trip to {region} for {travelers}. Budget is {budget}, duration {duration} days. Interested in {interest}.",
-
         "I need a {duration}-day itinerary for {region} focusing on {interest} and {interest2}. Budget: {budget}.",
-
         # === BROAD REQUESTS (region only, need destination research) ===
         # Agent should: search destinations + coordinates + weather + info + create itinerary (5-7 tools)
         "I want to explore {region} in {season}. Find good destinations and create an itinerary for me.",
-
         "Plan a {budget} trip to {region}. I love {interest}. Find the best place and create an itinerary.",
-
         "Help me plan a vacation in {region} for {travelers}. I'm interested in {interest}.",
-
         "I want to visit {region}. Create a travel plan for me focusing on {interest} and {interest2}.",
-
         # === COMPARISON REQUESTS (compare then decide and create itinerary) ===
         # Agent should: coordinates + weather + info for both + create itinerary for winner (6-8 tools)
         "Should I visit {city1} or {city2} for a {duration}-day {season} trip? Compare them and create an itinerary for the better option.",
-
         "I'm deciding between {city1} and {city2}. Check weather, compare them, and create a {duration}-day itinerary for your recommendation.",
-
         # === VAGUE/OPEN-ENDED REQUESTS (minimal details) ===
         # Agent should: search region + pick destination + weather + info + create itinerary (5-7 tools)
         "I need a vacation. I like {interest}. Plan something for me.",
-
         "Plan a {season} getaway for {travelers}. Surprise me with a good destination.",
-
         "I want to go somewhere {adjective} for {interest}. Create a trip for me.",
-
         "Find me a great {budget} destination and plan my trip.",
-
         # === RESEARCH-HEAVY REQUESTS (lots of comparison before itinerary) ===
         # Agent should: search + coordinates (multiple) + weather (multiple) + info + create itinerary (7-10 tools)
         "Find the best {season} destinations in {region}. Check weather for top 3, then create an itinerary for the best one.",
-
         "I want a {budget} {interest} trip. Search {region}, compare weather in several places, and create an itinerary for the top pick.",
-
         "Show me good {adjective} destinations in {region}. Compare a few, then plan a {duration}-day trip to your favorite.",
-
         # === MULTI-CITY REQUESTS ===
         # Agent should: coordinates (multiple) + distances + weather (multiple) + create multi-city itinerary (7-9 tools)
         "Plan a {duration}-day multi-city trip visiting {city1}, {city2}, and {city3}. Create a complete itinerary.",
-
         "I want to visit multiple cities in {region} over {duration} days. Find the best route and create an itinerary.",
     ]
 
@@ -788,12 +770,47 @@ def generate_travel_queries(n: int = 10) -> List[str]:
     durations = ["3", "5", "7", "10", "14"]
     travelers = ["solo travelers", "couples", "families", "groups"]
     seasons = ["spring", "summer", "fall", "winter"]
-    interests = ["food", "history", "nature", "beaches", "museums", "adventure", "culture", "nightlife"]
-    adjectives = ["quick", "relaxing", "adventurous", "cultural", "romantic", "family-friendly", "exciting", "peaceful"]
+    interests = [
+        "food",
+        "history",
+        "nature",
+        "beaches",
+        "museums",
+        "adventure",
+        "culture",
+        "nightlife",
+    ]
+    adjectives = [
+        "quick",
+        "relaxing",
+        "adventurous",
+        "cultural",
+        "romantic",
+        "family-friendly",
+        "exciting",
+        "peaceful",
+    ]
     cities = [
-        "Paris", "Tokyo", "New York", "London", "Barcelona", "Rome", "Bangkok",
-        "Dubai", "Singapore", "Amsterdam", "Berlin", "Sydney", "Istanbul", "Prague",
-        "Vienna", "Lisbon", "Cairo", "Mumbai", "Toronto", "Buenos Aires"
+        "Paris",
+        "Tokyo",
+        "New York",
+        "London",
+        "Barcelona",
+        "Rome",
+        "Bangkok",
+        "Dubai",
+        "Singapore",
+        "Amsterdam",
+        "Berlin",
+        "Sydney",
+        "Istanbul",
+        "Prague",
+        "Vienna",
+        "Lisbon",
+        "Cairo",
+        "Mumbai",
+        "Toronto",
+        "Buenos Aires",
     ]
 
     queries = []
@@ -819,7 +836,7 @@ def generate_travel_queries(n: int = 10) -> List[str]:
             city=random.choice(cities),
             city1=city_choices[0],
             city2=city_choices[1],
-            city3=city_choices[2]
+            city3=city_choices[2],
         )
         queries.append(query)
 
@@ -831,16 +848,13 @@ async def main():
 
     parser = argparse.ArgumentParser(description="Travel Planning Agent Demo")
     parser.add_argument(
-        "--count",
-        type=int,
-        default=1,
-        help="Number of queries to run (default: 3)"
+        "--count", type=int, default=1, help="Number of queries to run (default: 3)"
     )
     parser.add_argument(
         "--delay",
         type=float,
         default=2.0,
-        help="Delay between queries in seconds (default: 2.0)"
+        help="Delay between queries in seconds (default: 2.0)",
     )
 
     args = parser.parse_args()
@@ -859,16 +873,14 @@ async def main():
 
     all_tool_calls = []
     for i, query in enumerate(queries, 1):
-        print(f"\n\n{'#'*80}")
+        print(f"\n\n{'#' * 80}")
         print(f"# Query {i} of {args.count}")
-        print(f"{'#'*80}\n")
+        print(f"{'#' * 80}\n")
 
         tool_calls = await run_travel_query(query)
-        all_tool_calls.append({
-            "query": query,
-            "tools_used": tool_calls,
-            "tool_count": len(tool_calls)
-        })
+        all_tool_calls.append(
+            {"query": query, "tools_used": tool_calls, "tool_count": len(tool_calls)}
+        )
 
         if i < args.count:
             print(f"\nWaiting {args.delay} seconds before next query...")
@@ -891,7 +903,9 @@ async def main():
 
     print("\nTrajectory variation:")
     unique_trajectories = len(set(tuple(r["tools_used"]) for r in all_tool_calls))
-    print(f"  - Unique tool call sequences: {unique_trajectories}/{len(all_tool_calls)}")
+    print(
+        f"  - Unique tool call sequences: {unique_trajectories}/{len(all_tool_calls)}"
+    )
 
     avg_tools = sum(r["tool_count"] for r in all_tool_calls) / len(all_tool_calls)
     print(f"  - Average tools per query: {avg_tools:.2f}")
