@@ -1,6 +1,6 @@
 # Travel Planning Agent (Python)
 
-A travel planning AI agent built with OpenAI's Python SDK and Traceloop for observability. This agent creates detailed travel itineraries using real-world APIs.
+A travel planning AI agent built with the OpenAI Agents SDK and Traceloop for observability. This agent creates detailed travel itineraries using real-world APIs.
 
 ## Features
 
@@ -29,7 +29,7 @@ A travel planning AI agent built with OpenAI's Python SDK and Traceloop for obse
 # Install dependencies
 uv sync
 
-# Set environment variables
+# Set environment variables (or create .env file)
 export OPENAI_API_KEY="your-openai-api-key"
 export TRACELOOP_API_KEY="your-traceloop-api-key"  # Optional
 ```
@@ -38,16 +38,13 @@ export TRACELOOP_API_KEY="your-traceloop-api-key"  # Optional
 
 ```bash
 # Run a single query
-uv run ai-sdk-agent
+uv run python travel_agent.py
 
 # Run multiple queries
-uv run ai-sdk-agent --count 5
+uv run python travel_agent.py --count 5
 
 # Customize delay between queries
-uv run ai-sdk-agent --count 3 --delay 3.0
-
-# Or run directly
-uv run python ai_sdk_agent.py --count 1
+uv run python travel_agent.py --count 3 --delay 3.0
 ```
 
 ## Example Queries
@@ -73,9 +70,9 @@ The agent produces structured itineraries including:
 ## Architecture
 
 ```
-User Query → GPT-4o Agent → Tool Calls → External APIs → Structured Itinerary
-                  ↓
-           Traceloop (OpenTelemetry spans)
+User Query → OpenAI Agents SDK → Tool Calls → External APIs → Structured Itinerary
+                    ↓
+             Traceloop (OpenTelemetry spans)
 ```
 
 ## License
