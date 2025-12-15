@@ -592,12 +592,12 @@ Each day should have 3-5 activities with specific times, locations, and helpful 
         )
 
 
-class DemoTravelPlannerAgent(Agent[TravelContext]):
+class TravelRecommendationPlannerAgent(Agent[TravelContext]):
     """Specialized agent for travel planning with 6 tools, always creating itineraries."""
 
     def __init__(self, model: str = "gpt-4o"):
         super().__init__(
-            name="Demo Travel Planner Agent",
+            name="Travel Recommendation Planner Agent",
             instructions="""
             You are an expert travel planning assistant. Your PRIMARY GOAL is to ALWAYS create a detailed
             travel itinerary for the user, no matter how broad or specific their request is.
@@ -706,7 +706,7 @@ async def run_travel_query(query: str):
     print("=" * 80)
 
     travel_ctx = TravelContext(conversation_history=[])
-    travel_agent = DemoTravelPlannerAgent()
+    travel_agent = TravelRecommendationPlannerAgent()
 
     print("\nAgent Response: ", end="", flush=True)
 

@@ -5,12 +5,18 @@ description = "Travel Planning Agent with OpenAI Agents SDK and Traceloop"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "openai-agents>=0.0.3",
+    "openai-agents>=0.6.3",
     "openai>=1.40.0",
     "pydantic>=2.0.0",
     "requests>=2.31.0",
     "python-dotenv>=1.0.0",
     "traceloop-sdk>=0.30.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
 ]
 
 [project.scripts]
@@ -19,9 +25,3 @@ travel-agent = "travel_agent:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[tool.uv]
-dev-dependencies = [
-    "ruff>=0.5.0",
-    "mypy>=1.10.0",
-]
