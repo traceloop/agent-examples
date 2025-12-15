@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsx index.ts"
+    "dev": "tsx ai_sdk_agent.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.0",
