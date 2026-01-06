@@ -100,6 +100,7 @@ def web_search(query: str, max_results: int = 5) -> str:
 def analyze_content(content: str, analysis_type: str = "summary") -> str:
     """
     Analyze content with specified analysis type.
+    Uses an LLM internally to create nested spans.
 
     Args:
         content: The content to analyze
@@ -111,51 +112,43 @@ def analyze_content(content: str, analysis_type: str = "summary") -> str:
     print(f"[Tool: analyze_content] Analyzing content (type: {analysis_type})")
 
     try:
-        time.sleep(0.3)  # Simulate processing
+        time.sleep(0.2)
 
-        # In a real implementation, this would use NLP/ML models
-        # For demo purposes, we'll return structured mock analysis
+        # Use an LLM call within the tool to create nested spans
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+
+        # Create a prompt based on analysis type
+        if analysis_type == "summary":
+            prompt = f"Summarize the following content in 2-3 sentences:\n\n{content[:500]}"
+        elif analysis_type == "key_points":
+            prompt = f"Extract 3-5 key points from this content:\n\n{content[:500]}"
+        elif analysis_type == "sentiment":
+            prompt = f"Analyze the sentiment of this content (positive/negative/neutral):\n\n{content[:500]}"
+        else:  # technical
+            prompt = f"Assess the technical complexity and main topics of this content:\n\n{content[:500]}"
+
+        # This creates a nested LLM span under the tool span
+        llm_response = llm.invoke(prompt)
+        llm_result = llm_response.content if hasattr(llm_response, 'content') else str(llm_response)
 
         analysis = {
             "analysis_type": analysis_type,
             "content_length": len(content),
             "word_count": len(content.split()),
+            "llm_analysis": llm_result,
         }
-
-        if analysis_type == "summary":
-            # Extract first few sentences as summary
-            sentences = content.split(". ")[:3]
-            analysis["summary"] = ". ".join(sentences) + "."
-
-        elif analysis_type == "key_points":
-            # Mock key point extraction
-            analysis["key_points"] = [
-                "Primary concept discussed in content",
-                "Supporting details and evidence",
-                "Conclusions or implications",
-            ]
-
-        elif analysis_type == "sentiment":
-            # Mock sentiment analysis
-            analysis["sentiment"] = {
-                "overall": "neutral",
-                "confidence": 0.75,
-                "positive_score": 0.5,
-                "negative_score": 0.2,
-                "neutral_score": 0.3,
-            }
-
-        elif analysis_type == "technical":
-            # Mock technical analysis
-            analysis["technical_level"] = "intermediate"
-            analysis["topics"] = ["technology", "research", "development"]
-            analysis["complexity_score"] = 6.5
 
         return json.dumps(analysis, indent=2)
 
     except Exception as e:
         print(f"[Tool: analyze_content] Error: {str(e)}")
-        return json.dumps({"error": f"Analysis failed: {str(e)}"})
+        # Fallback to mock analysis if LLM fails
+        return json.dumps({
+            "analysis_type": analysis_type,
+            "content_length": len(content),
+            "fallback": True,
+            "error": str(e)
+        })
 
 
 @tool
@@ -223,6 +216,7 @@ def extract_data(text: str, data_type: str = "facts") -> str:
 def compare_sources(source1: str, source2: str) -> str:
     """
     Compare two information sources and identify agreements/disagreements.
+    Uses an LLM internally to create nested spans.
 
     Args:
         source1: First source content
@@ -234,34 +228,41 @@ def compare_sources(source1: str, source2: str) -> str:
     print(f"[Tool: compare_sources] Comparing two sources")
 
     try:
-        time.sleep(0.4)
+        time.sleep(0.2)
+
+        # Use an LLM call within the tool to create nested spans
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+
+        prompt = f"""Compare these two information sources and identify:
+1. Key agreements
+2. Major disagreements
+3. Unique points in each
+
+Source 1: {source1[:300]}
+
+Source 2: {source2[:300]}
+
+Provide a structured comparison."""
+
+        # This creates a nested LLM span under the tool span
+        llm_response = llm.invoke(prompt)
+        llm_comparison = llm_response.content if hasattr(llm_response, 'content') else str(llm_response)
 
         comparison = {
             "source1_length": len(source1),
             "source2_length": len(source2),
-            "agreements": [
-                "Both sources agree on core concepts",
-                "Consistent data points found",
-            ],
-            "disagreements": [
-                "Different perspectives on implementation",
-                "Varying emphasis on importance",
-            ],
-            "unique_to_source1": [
-                "Additional context in source 1",
-            ],
-            "unique_to_source2": [
-                "Extra details in source 2",
-            ],
+            "llm_comparison": llm_comparison,
             "similarity_score": 0.73,
-            "reliability_assessment": "Both sources appear credible",
         }
 
         return json.dumps(comparison, indent=2)
 
     except Exception as e:
         print(f"[Tool: compare_sources] Error: {str(e)}")
-        return json.dumps({"error": f"Comparison failed: {str(e)}"})
+        return json.dumps({
+            "error": f"Comparison failed: {str(e)}",
+            "fallback": True
+        })
 
 
 @tool
@@ -384,15 +385,21 @@ def research_agent_node(state: ResearchState) -> ResearchState:
     model_with_tools = model.bind_tools(tools)
 
     # Enhanced system message based on iteration
+    # Force multi-tool usage for complex span hierarchies
     if iteration == 0:
-        system_msg = """You are a research assistant. You MUST use the web_search tool to find current information
-about the user's question. Do not answer without searching first."""
+        system_msg = """You are a research assistant. You MUST:
+1) Use web_search to find information
+2) Use analyze_content on the search results to extract key points
+Call BOTH tools in this iteration."""
     elif iteration == 1:
-        system_msg = """You have search results. Now either:
-1) Use analyze_content or extract_data to process the information, OR
-2) Provide your final answer based on the search results."""
+        system_msg = """You have search results and analysis. Now:
+1) Use extract_data to pull out specific facts/numbers from the analyzed content
+2) If comparing topics, use compare_sources
+Call at least ONE more tool before answering."""
     else:
-        system_msg = """Provide your final answer based on all gathered information. Do not use any more tools."""
+        system_msg = """Now synthesize all the gathered information and provide your final answer.
+You may optionally use generate_report to format your findings.
+You can provide your answer directly or use one final tool."""
 
     # Invoke the model
     response = model_with_tools.invoke([
