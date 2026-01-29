@@ -167,7 +167,6 @@ const FinalArticleSchema = z.object({
 // HELPER FUNCTIONS
 // ============================================================================
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Readability calculations
 function calculateFleschKincaid(text: string): number {
@@ -323,7 +322,6 @@ const analyzeTopicIntentShallowTool = tool({
     console.log(`[Orchestrator] Performing shallow topic analysis for: ${topic}`);
 
     try {
-      await sleep(300);
 
       // Simple heuristic classification
       const lowerTopic = topic.toLowerCase();
@@ -363,7 +361,6 @@ const analyzeTopicIntentDeepTool = tool({
     console.log(`[Orchestrator] Performing deep topic analysis for: ${topic}`);
 
     try {
-      await sleep(500);
 
       // Use LLM for deeper analysis
       const result = await generateObject({
@@ -413,7 +410,6 @@ const validateTopicFeasibilityQuickTool = tool({
     console.log(`[Orchestrator] Quick feasibility check for: ${topic}`);
 
     try {
-      await sleep(300);
 
       // Simple Wikipedia check
       const response = await fetch(
@@ -455,7 +451,6 @@ const validateTopicFeasibilityThoroughTool = tool({
     console.log(`[Orchestrator] Thorough feasibility check for: ${topic}`);
 
     try {
-      await sleep(1000);
 
       const sources: string[] = [];
       let successCount = 0;
@@ -478,7 +473,6 @@ const validateTopicFeasibilityThoroughTool = tool({
         // Silent fail
       }
 
-      await sleep(500);
 
       // Check if we can get general web info (simulate)
       sources.push("Web search");
@@ -516,7 +510,6 @@ const estimateComplexityTool = tool({
     console.log(`[Orchestrator] Estimating complexity for ${content_type}: ${topic}`);
 
     try {
-      await sleep(200);
 
       // Heuristic-based complexity estimation
       const wordCount = topic.split(/\s+/).length;
@@ -568,7 +561,6 @@ const suggestPipelineConfigurationTool = tool({
     console.log(`[Orchestrator] Suggesting pipeline configuration for ${content_type} content`);
 
     try {
-      await sleep(200);
 
       const config = {
         research_tools: [] as string[],
@@ -633,7 +625,6 @@ const searchNewsAPITool = tool({
     console.log(`[Research] Searching NewsAPI for: ${topic}`);
 
     try {
-      await sleep(1000);
 
       const apiKey = process.env.NEWS_API_KEY;
       if (!apiKey) {
@@ -686,7 +677,6 @@ const searchNewsDataTool = tool({
     console.log(`[Research] Searching NewsData.io for: ${topic}`);
 
     try {
-      await sleep(500);
 
       // Simulated NewsData.io response (replace with real API key)
       const articles = [
@@ -726,7 +716,6 @@ const fetchWikipediaContentTool = tool({
     console.log(`[Research] Fetching detailed Wikipedia content for: ${topic}`);
 
     try {
-      await sleep(800);
 
       const response = await fetch(
         `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`,
@@ -769,7 +758,6 @@ const fetchWikipediaSummaryTool = tool({
     console.log(`[Research] Fetching Wikipedia summary for: ${topic}`);
 
     try {
-      await sleep(400);
 
       const response = await fetch(
         `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`,
@@ -813,7 +801,6 @@ const searchDuckDuckGoTool = tool({
     console.log(`[Research] Searching DuckDuckGo for: ${topic}`);
 
     try {
-      await sleep(600);
 
       // DuckDuckGo Instant Answer API
       const response = await fetch(
@@ -853,7 +840,6 @@ const gatherStatisticsTool = tool({
     console.log(`[Research] Gathering statistics for: ${topic}`);
 
     try {
-      await sleep(500);
 
       // Simulated statistics gathering
       const statistics = [
@@ -896,7 +882,6 @@ const fetchArxivPapersTool = tool({
     console.log(`[Research] Searching arXiv for: ${topic}`);
 
     try {
-      await sleep(1200);
 
       // arXiv API
       const response = await fetch(
@@ -954,7 +939,6 @@ const searchGoogleScholarTool = tool({
     console.log(`[Research] Searching Google Scholar for: ${topic}`);
 
     try {
-      await sleep(1000);
 
       const apiKey = process.env.SERPER_API_KEY;
       if (!apiKey) {
@@ -1019,7 +1003,6 @@ const generateOutlineBasicTool = tool({
   execute: async ({ topic, research_data }) => {
     console.log(`[Writer] Generating basic outline for: ${topic}`);
     try {
-      await sleep(500);
       const result = await generateObject({
         model: openai("gpt-4o-mini"),
         schema: z.object({
@@ -1044,7 +1027,6 @@ const generateOutlineDetailedTool = tool({
   execute: async ({ topic, research_data }) => {
     console.log(`[Writer] Generating detailed outline for: ${topic}`);
     try {
-      await sleep(800);
       const result = await generateObject({
         model: openai("gpt-4o-mini"),
         schema: z.object({
@@ -1073,7 +1055,6 @@ const writeDraftShortTool = tool({
   execute: async ({ topic, outline, research_data }) => {
     console.log(`[Writer] Writing short draft for: ${topic}`);
     try {
-      await sleep(1500);
       const result = await generateText({
         model: openai("gpt-4o-mini"),
         messages: [{role: "user", content: `Write 500-1000 word article about ${topic}.\nOutline: ${outline}\nResearch: ${research_data.substring(0, 1000)}`}],
@@ -1095,7 +1076,6 @@ const writeDraftLongTool = tool({
   execute: async ({ topic, outline, research_data }) => {
     console.log(`[Writer] Writing long draft for: ${topic}`);
     try {
-      await sleep(2500);
       const result = await generateText({
         model: openai("gpt-4o"),
         messages: [{role: "user", content: `Write comprehensive 1500-3000 word article about ${topic}.\nOutline: ${outline}\nResearch: ${research_data.substring(0, 2000)}`}],
@@ -1118,7 +1098,6 @@ const writeSectionBySectionTool = tool({
   execute: async ({ topic, section_heading, research_data }) => {
     console.log(`[Writer] Writing section: ${section_heading}`);
     try {
-      await sleep(1000);
       const result = await generateText({
         model: openai("gpt-4o-mini"),
         messages: [{role: "user", content: `Write the "${section_heading}" section for article about ${topic}.\nResearch: ${research_data.substring(0, 800)}`}],
@@ -1139,7 +1118,6 @@ const addCitationsInlineTool = tool({
   execute: async ({ content, sources }) => {
     console.log(`[Writer] Adding inline citations`);
     try {
-      await sleep(400);
       // Simple citation insertion
       const citations = JSON.parse(sources || "[]");
       let citedContent = content;
@@ -1162,7 +1140,6 @@ const addCitationsBibliographyTool = tool({
   execute: async ({ content, sources }) => {
     console.log(`[Writer] Adding bibliography`);
     try {
-      await sleep(400);
       const citations = JSON.parse(sources || "[]");
       let bibliography = "\n\n## References\n\n";
       citations.forEach((source: any, idx: number) => {
@@ -1271,7 +1248,6 @@ const checkGrammarLanguageToolTool = tool({
   execute: async ({ content }) => {
     console.log(`[Editor] Running LanguageTool grammar check`);
     try {
-      await sleep(1500);
       // Simulated LanguageTool response
       const issues = Math.floor(content.length / 500);
       return {status: "success", issues_found: issues, check_type: "comprehensive"};
@@ -1289,7 +1265,6 @@ const improveClarityAggressiveTool = tool({
   execute: async ({ content }) => {
     console.log(`[Editor] Aggressive clarity improvement`);
     try {
-      await sleep(2000);
       const result = await generateText({
         model: openai("gpt-4o"),
         messages: [{role: "user", content: `Significantly improve clarity and flow of this text, restructure as needed:\n\n${content.substring(0, 2000)}`}],
@@ -1309,7 +1284,6 @@ const improveClarityConservativeTool = tool({
   execute: async ({ content }) => {
     console.log(`[Editor] Conservative clarity improvement`);
     try {
-      await sleep(1000);
       const result = await generateText({
         model: openai("gpt-4o-mini"),
         messages: [{role: "user", content: `Make minor improvements to clarity while preserving the author's voice:\n\n${content.substring(0, 1500)}`}],
@@ -1330,7 +1304,6 @@ const checkFactAccuracyTool = tool({
   execute: async ({ content, research_data }) => {
     console.log(`[Editor] Checking fact accuracy`);
     try {
-      await sleep(800);
       // Simulated fact checking
       const factCount = (content.match(/\d+/g) || []).length;
       return {status: "success", facts_checked: factCount, accuracy_score: 95};
@@ -1348,7 +1321,6 @@ const simplifyVocabularyTool = tool({
   execute: async ({ content }) => {
     console.log(`[Editor] Simplifying vocabulary`);
     try {
-      await sleep(600);
       // Simple word replacement
       let simplified = content
         .replace(/utilize/gi, "use")
@@ -1373,7 +1345,6 @@ const analyzeKeywordsSerperTool = tool({
   execute: async ({ topic }) => {
     console.log(`[SEO] Analyzing keywords via Serper for: ${topic}`);
     try {
-      await sleep(1000);
       const apiKey = process.env.SERPER_API_KEY;
       if (!apiKey) {
         return {status: "error", message: "SERPER_API_KEY not set"};
@@ -1400,7 +1371,6 @@ const analyzeKeywordsDuckDuckGoTool = tool({
   execute: async ({ topic }) => {
     console.log(`[SEO] Analyzing keywords via DuckDuckGo`);
     try {
-      await sleep(600);
       const keywords = [topic, `${topic} guide`, `${topic} tutorial`];
       return {status: "success", keywords, source: "duckduckgo"};
     } catch (error: any) {
@@ -1528,7 +1498,6 @@ const analyzeCompetitorsTool = tool({
   execute: async ({ topic }) => {
     console.log(`[SEO] Analyzing competitors for: ${topic}`);
     try {
-      await sleep(1200);
       const apiKey = process.env.SERPER_API_KEY;
       if (!apiKey) {
         return {status: "error", message: "SERPER_API_KEY not set"};
@@ -1552,27 +1521,157 @@ const analyzeCompetitorsTool = tool({
 });
 
 const optimizeHeadingsTool = tool({
-  description: "Restructure H1/H2/H3 hierarchy for SEO",
+  description: "Analyze and optimize H1/H2/H3 heading hierarchy for SEO",
   parameters: z.object({
-    content: z.string(),
-    primary_keyword: z.string(),
+    content: z.string().describe("The article content to optimize headings for"),
   }),
-  execute: async ({ content, primary_keyword }) => {
+  execute: async ({ content }) => {
     console.log(`[SEO] Optimizing heading structure`);
     try {
-      // Simple heading optimization
       const headings = content.match(/^#+\s+.+$/gm) || [];
+      const h1Count = headings.filter(h => h.startsWith("# ")).length;
+      const h2Count = headings.filter(h => h.startsWith("## ")).length;
+      const h3Count = headings.filter(h => h.startsWith("### ")).length;
+      
+      // Extract primary keyword from content for recommendation
+      const primaryKeyword = extractKeywordsNLP(content, 1)[0] || "main topic";
+      
+      const recommendations: string[] = [];
+      if (h1Count === 0) recommendations.push("Add an H1 heading");
+      if (h1Count > 1) recommendations.push("Use only one H1 heading");
+      if (h2Count < 2) recommendations.push("Add more H2 subheadings for structure");
+      recommendations.push(`Include "${primaryKeyword}" in H1 and H2 tags`);
+      
       return {
         status: "success",
-        current_headings: headings.length,
-        optimized: true,
-        recommendation: `Include "${primary_keyword}" in H1 and H2 tags`,
+        heading_counts: { h1: h1Count, h2: h2Count, h3: h3Count, total: headings.length },
+        primary_keyword: primaryKeyword,
+        recommendations,
       };
     } catch (error: any) {
-      return {status: "error", message: error.message};
+      return { status: "error", message: error.message };
     }
   },
 });
+
+// ============================================================================
+// TASK HELPER FUNCTIONS (clean, no nesting)
+// ============================================================================
+
+const topicAnalysis = (userQuery: string) =>
+  Traceloop.withTask({ name: "topic_analysis" }, () =>
+    generateText({
+      model: openai("gpt-4o-mini"),
+      messages: [
+        { role: "system", content: "You are a content strategy orchestrator. Analyze the topic and prepare for content creation." },
+        { role: "user", content: `Analyze this content request: ${userQuery}` },
+      ],
+      tools: {
+        analyze_topic_intent_shallow: analyzeTopicIntentShallowTool,
+        analyze_topic_intent_deep: analyzeTopicIntentDeepTool,
+        validate_topic_feasibility_quick: validateTopicFeasibilityQuickTool,
+        validate_topic_feasibility_thorough: validateTopicFeasibilityThoroughTool,
+        estimate_complexity: estimateComplexityTool,
+        suggest_pipeline_configuration: suggestPipelineConfigurationTool,
+      },
+      maxSteps: 5,
+      experimental_telemetry: { isEnabled: true },
+    })
+  );
+
+const researchPhase = (userQuery: string, orchestratorResult: string) =>
+  Traceloop.withTask({ name: "research_phase" }, () =>
+    generateText({
+      model: openai("gpt-4o-mini"),
+      messages: [
+        { role: "system", content: "You are a research specialist. Gather comprehensive information using available tools." },
+        { role: "user", content: `Research this topic thoroughly: ${userQuery}\nOrchestrator analysis: ${orchestratorResult}` },
+      ],
+      tools: {
+        search_news_api: searchNewsAPITool,
+        search_news_data: searchNewsDataTool,
+        fetch_wikipedia_content: fetchWikipediaContentTool,
+        fetch_wikipedia_summary: fetchWikipediaSummaryTool,
+        search_duckduckgo: searchDuckDuckGoTool,
+        gather_statistics: gatherStatisticsTool,
+        fetch_arxiv_papers: fetchArxivPapersTool,
+        search_google_scholar: searchGoogleScholarTool,
+      },
+      maxSteps: 8,
+      experimental_telemetry: { isEnabled: true },
+    })
+  );
+
+const writingPhase = (userQuery: string, researchResult: string) =>
+  Traceloop.withTask({ name: "writing_phase" }, () =>
+    generateText({
+      model: openai("gpt-4o"),
+      messages: [
+        { role: "system", content: "You are a professional writer. Create a high-quality article draft." },
+        { role: "user", content: `Write an article about: ${userQuery}\nResearch: ${researchResult}` },
+      ],
+      tools: {
+        generate_outline_basic: generateOutlineBasicTool,
+        generate_outline_detailed: generateOutlineDetailedTool,
+        write_draft_short: writeDraftShortTool,
+        write_draft_long: writeDraftLongTool,
+        write_section_by_section: writeSectionBySectionTool,
+        add_citations_inline: addCitationsInlineTool,
+        add_citations_bibliography: addCitationsBibliographyTool,
+      },
+      maxSteps: 7,
+      experimental_telemetry: { isEnabled: true },
+    })
+  );
+
+const editingPhase = (writingResult: string) =>
+  Traceloop.withTask({ name: "editing_phase" }, () =>
+    generateText({
+      model: openai("gpt-4o-mini"),
+      messages: [
+        { role: "system", content: "You are an editor. Improve readability, grammar, and clarity." },
+        { role: "user", content: `Edit this article:\n${writingResult}` },
+      ],
+      tools: {
+        analyze_readability_flesch: analyzeReadabilityFleschTool,
+        analyze_readability_gunning: analyzeReadabilityGunningTool,
+        analyze_readability_dale: analyzeReadabilityDALETool,
+        check_grammar_basic: checkGrammarBasicTool,
+        check_grammar_languagetool: checkGrammarLanguageToolTool,
+        improve_clarity_aggressive: improveClarityAggressiveTool,
+        improve_clarity_conservative: improveClarityConservativeTool,
+        check_fact_accuracy: checkFactAccuracyTool,
+        simplify_vocabulary: simplifyVocabularyTool,
+      },
+      maxSteps: 7,
+      experimental_telemetry: { isEnabled: true },
+    })
+  );
+
+const seoPhase = (editingResult: string) =>
+  Traceloop.withTask({ name: "seo_optimization_phase" }, () =>
+    generateText({
+      model: openai("gpt-4o-mini"),
+      messages: [
+        { role: "system", content: "You are an SEO specialist. Optimize the article for search engines." },
+        { role: "user", content: `Optimize this article for SEO:\n${editingResult}` },
+      ],
+      tools: {
+        analyze_keywords_serper: analyzeKeywordsSerperTool,
+        analyze_keywords_duckduckgo: analyzeKeywordsDuckDuckGoTool,
+        extract_keywords_nlp: extractKeywordsNLPTool,
+        check_keyword_density: checkKeywordDensityTool,
+        generate_meta_tags_short: generateMetaTagsShortTool,
+        generate_meta_tags_long: generateMetaTagsLongTool,
+        generate_open_graph_tags: generateOpenGraphTagsTool,
+        suggest_internal_links: suggestInternalLinksTool,
+        analyze_competitors: analyzeCompetitorsTool,
+        optimize_headings: optimizeHeadingsTool,
+      },
+      maxSteps: 8,
+      experimental_telemetry: { isEnabled: true },
+    })
+  );
 
 // ============================================================================
 // MAIN ORCHESTRATION FUNCTION
@@ -1585,145 +1684,20 @@ async function runContentCreationPipeline(userQuery: string) {
 
   try {
     await Traceloop.withWorkflow({ name: "content_creation_pipeline" }, async () => {
-      // Phase 1: Orchestrator
       console.log("\n[PHASE 1: ORCHESTRATOR] Analyzing topic...\n");
-      const orchestratorResult = await Traceloop.withTask({ name: "topic_analysis" }, async () => {
-        const result = await generateText({
-          model: openai("gpt-4o-mini"),
-          messages: [
-            {
-              role: "system",
-              content: "You are a content strategy orchestrator. Analyze the topic and prepare for content creation."
-            },
-            {role: "user", content: `Analyze this content request: ${userQuery}`}
-          ],
-          tools: {
-            analyze_topic_intent_shallow: analyzeTopicIntentShallowTool,
-            analyze_topic_intent_deep: analyzeTopicIntentDeepTool,
-            validate_topic_feasibility_quick: validateTopicFeasibilityQuickTool,
-            validate_topic_feasibility_thorough: validateTopicFeasibilityThoroughTool,
-            estimate_complexity: estimateComplexityTool,
-            suggest_pipeline_configuration: suggestPipelineConfigurationTool,
-          },
-          maxSteps: 5,
-          experimental_telemetry: {isEnabled: true, metadata: {phase: "orchestrator"}},
-        });
-        return result.text;
-      });
+      const { text: orchestratorResult } = await topicAnalysis(userQuery);
 
-      // Phase 2: Research
       console.log("\n[PHASE 2: RESEARCH] Gathering information...\n");
-      const researchResult = await Traceloop.withTask({ name: "research_phase" }, async () => {
-        const result = await generateText({
-          model: openai("gpt-4o-mini"),
-          messages: [
-            {
-              role: "system",
-              content: "You are a research specialist. Gather comprehensive information using available tools."
-            },
-            {role: "user", content: `Research this topic thoroughly: ${userQuery}\nOrchestrator analysis: ${orchestratorResult}`}
-          ],
-          tools: {
-            search_news_api: searchNewsAPITool,
-            search_news_data: searchNewsDataTool,
-            fetch_wikipedia_content: fetchWikipediaContentTool,
-            fetch_wikipedia_summary: fetchWikipediaSummaryTool,
-            search_duckduckgo: searchDuckDuckGoTool,
-            gather_statistics: gatherStatisticsTool,
-            fetch_arxiv_papers: fetchArxivPapersTool,
-            search_google_scholar: searchGoogleScholarTool,
-          },
-          maxSteps: 8,
-          experimental_telemetry: {isEnabled: true, metadata: {phase: "research"}},
-        });
-        return result.text;
-      });
+      const { text: researchResult } = await researchPhase(userQuery, orchestratorResult);
 
-      // Phase 3: Writing
       console.log("\n[PHASE 3: WRITING] Drafting article...\n");
-      const writingResult = await Traceloop.withTask({ name: "writing_phase" }, async () => {
-        const result = await generateText({
-          model: openai("gpt-4o"),
-          messages: [
-            {
-              role: "system",
-              content: "You are a professional writer. Create a high-quality article draft."
-            },
-            {role: "user", content: `Write an article about: ${userQuery}\nResearch: ${researchResult}`}
-          ],
-          tools: {
-            generate_outline_basic: generateOutlineBasicTool,
-            generate_outline_detailed: generateOutlineDetailedTool,
-            write_draft_short: writeDraftShortTool,
-            write_draft_long: writeDraftLongTool,
-            write_section_by_section: writeSectionBySectionTool,
-            add_citations_inline: addCitationsInlineTool,
-            add_citations_bibliography: addCitationsBibliographyTool,
-          },
-          maxSteps: 7,
-          experimental_telemetry: {isEnabled: true, metadata: {phase: "writing"}},
-        });
-        return result.text;
-      });
+      const { text: writingResult } = await writingPhase(userQuery, researchResult);
 
-      // Phase 4: Editing
       console.log("\n[PHASE 4: EDITING] Improving quality...\n");
-      const editingResult = await Traceloop.withTask({ name: "editing_phase" }, async () => {
-        const result = await generateText({
-          model: openai("gpt-4o-mini"),
-          messages: [
-            {
-              role: "system",
-              content: "You are an editor. Improve readability, grammar, and clarity."
-            },
-            {role: "user", content: `Edit this article:\n${writingResult}`}
-          ],
-          tools: {
-            analyze_readability_flesch: analyzeReadabilityFleschTool,
-            analyze_readability_gunning: analyzeReadabilityGunningTool,
-            analyze_readability_dale: analyzeReadabilityDALETool,
-            check_grammar_basic: checkGrammarBasicTool,
-            check_grammar_languagetool: checkGrammarLanguageToolTool,
-            improve_clarity_aggressive: improveClarityAggressiveTool,
-            improve_clarity_conservative: improveClarityConservativeTool,
-            check_fact_accuracy: checkFactAccuracyTool,
-            simplify_vocabulary: simplifyVocabularyTool,
-          },
-          maxSteps: 7,
-          experimental_telemetry: {isEnabled: true, metadata: {phase: "editing"}},
-        });
-        return result.text;
-      });
+      const { text: editingResult } = await editingPhase(writingResult);
 
-      // Phase 5: SEO
       console.log("\n[PHASE 5: SEO] Optimizing for search...\n");
-      const seoResult = await Traceloop.withTask({ name: "seo_optimization_phase" }, async () => {
-        const result = await generateText({
-          model: openai("gpt-4o-mini"),
-          messages: [
-            {
-              role: "system",
-              content: "You are an SEO specialist. Optimize the article for search engines."
-            },
-            {role: "user", content: `Optimize this article for SEO:\n${editingResult}`}
-          ],
-          tools: {
-            analyze_keywords_serper: analyzeKeywordsSerperTool,
-            analyze_keywords_duckduckgo: analyzeKeywordsDuckDuckGoTool,
-            extract_keywords_nlp: extractKeywordsNLPTool,
-            check_keyword_density: checkKeywordDensityTool,
-            generate_meta_tags_short: generateMetaTagsShortTool,
-            generate_meta_tags_long: generateMetaTagsLongTool,
-            generate_open_graph_tags: generateOpenGraphTagsTool,
-            suggest_internal_links: suggestInternalLinksTool,
-            analyze_competitors: analyzeCompetitorsTool,
-            optimize_headings: optimizeHeadingsTool,
-          },
-          maxSteps: 8,
-          experimental_telemetry: {isEnabled: true, metadata: {phase: "seo"}},
-        });
-        return result.text;
-      });
+      const { text: seoResult } = await seoPhase(editingResult);
 
       console.log("\n" + "=".repeat(80));
       console.log("✅ Content creation pipeline completed!");
@@ -1751,11 +1725,18 @@ function generateContentQueries(n: number = 5): string[] {
     "The future of electric vehicles",
     "Cybersecurity best practices for small businesses",
     "The impact of social media on mental health",
+    "Introduction to blockchain technology",
+    "The rise of artificial general intelligence",
+    "Sustainable energy solutions for 2026",
+    "How to build a successful startup",
   ];
+
+  // Shuffle topics for variety
+  const shuffled = [...topics].sort(() => Math.random() - 0.5);
 
   const queries: string[] = [];
   for (let i = 0; i < n; i++) {
-    queries.push(topics[i % topics.length]);
+    queries.push(shuffled[i % shuffled.length]);
   }
   return queries;
 }
@@ -1788,7 +1769,6 @@ async function main() {
 
     if (i < count - 1) {
       console.log(`\nWaiting 2 seconds before next query...`);
-      await sleep(2000);
     }
   }
 
