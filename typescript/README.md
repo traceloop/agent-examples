@@ -84,6 +84,7 @@ npm install
 # Set environment variables
 export OPENAI_API_KEY="your-openai-api-key"
 export TRACELOOP_API_KEY="your-traceloop-api-key"  # Optional
+export TRACELOOP_BASE_URL="https://api.traceloop.dev"
 ```
 
 ## Usage
