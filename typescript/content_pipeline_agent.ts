@@ -1717,18 +1717,28 @@ async function runContentCreationPipeline(userQuery: string) {
 
 function generateContentQueries(n: number = 5): string[] {
   const topics = [
-    "Recent developments in quantum computing",
-    "A beginner's guide to TypeScript decorators",
-    "How remote work affects team productivity",
+    //`Recent developments in quantum computing`,
+    // `A beginner's guide to TypeScript decorators`,
+    // "How remote work affects team productivity",
     "The science behind climate change",
-    "Understanding machine learning algorithms",
-    "The future of electric vehicles",
+   // "Understanding machine learning algorithms",
+    // "The future of electric vehicles",
     "Cybersecurity best practices for small businesses",
-    "The impact of social media on mental health",
-    "Introduction to blockchain technology",
-    "The rise of artificial general intelligence",
-    "Sustainable energy solutions for 2026",
-    "How to build a successful startup",
+    // "The impact of social media on mental health",
+    // "Introduction to blockchain technology",
+`    // "The rise of artificial general intelligence",
+`    "Sustainable energy solutions for 2026",
+    // "How to build a successful startup",
+    "What is cloud computing",
+    "How does WiFi work",
+    "Benefits of drinking water",
+    "Why do we dream",
+    "How recycling helps the environment",
+    "What is photosynthesis",
+    "Tips for better sleep",
+    "How do search engines work",
+    "What is renewable energy",
+    "The basics of healthy eating",
   ];
 
   // Shuffle topics for variety
