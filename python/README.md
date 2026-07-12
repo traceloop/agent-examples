@@ -1,11 +1,12 @@
 # AI Agent Examples (Python)
 
-Two production-quality AI agents demonstrating different agent frameworks with OpenTelemetry instrumentation via Traceloop:
+Three examples demonstrating different agent frameworks and chat patterns with OpenTelemetry instrumentation via Traceloop:
 
 1. **Travel Planning Agent** - OpenAI Agents SDK
 2. **Research Assistant Agent** - LangGraph
+3. **Cooking Assistant Chat** - interactive chat where each message is a trace
 
-Both agents use real-world APIs and are designed for debugging and testing observability instrumentation.
+The agents use real-world APIs and are designed for debugging and testing observability instrumentation.
 
 ## 1. Travel Planning Agent (OpenAI Agents SDK)
 
@@ -89,6 +90,39 @@ User Query → StateGraph → Agent Node (decides action)
               Tool Node    Summarize Node
                     ↓            ↓
               Back to Agent    Final Output
+```
+
+## 3. Cooking Assistant Chat (per-message tracing)
+
+An interactive, human-in-the-loop chat with a friendly cooking assistant. Unlike the two batch
+agents above, this is a REPL: you type messages and the bot replies turn-by-turn.
+
+### Features
+
+- **Interactive REPL** — chat with the bot from your terminal.
+- **Each message is its own trace** — every user↔bot exchange is wrapped in a Traceloop
+  `@workflow` (`chat_turn`), so it appears as a separate root trace, with the OpenAI completion
+  captured as a child span. Turns are tagged with a `conversation_id` so a session's traces group
+  together.
+- **Conversation memory** — history is threaded across turns.
+- **Exit command** — type `exit` (or `quit` / `bye` / `:q`), or press Ctrl-C / Ctrl-D, to leave.
+
+### Usage
+
+```bash
+uv run python cooking_chat.py
+# or, via the script entry:
+uv run cooking-chat
+```
+
+Then chat, for example:
+
+```
+you  > what can I make with chickpeas and spinach?
+chef > ...
+you  > make it vegetarian and quicker
+chef > ...
+you  > exit
 ```
 
 ## Prerequisites

@@ -26,6 +26,7 @@ dev = [
 [project.scripts]
 travel-agent = "travel_agent:main"
 research-assistant = "research_assistant:main"
+cooking-chat = "cooking_chat:main"
 
 [build-system]
 requires = ["hatchling"]
